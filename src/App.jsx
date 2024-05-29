@@ -6,6 +6,7 @@ import { api } from "./services/api.js"
 export function App() {
   const [address, setAddress] = useState([])
   const [isOpen, setIsOpen] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
 
   const inputCep = useRef(null)
@@ -15,8 +16,6 @@ export function App() {
       verifyInput()
     }
   }
-
-  const showError = (isOpen) => isOpen
 
   function verifyInput() {
     let message = ""
@@ -40,33 +39,42 @@ export function App() {
   }
 
   async function searchCep(cep) {
-    const res = await api.get(`/${cep}/json/`)
+    setLoading(true)
 
-    if (res.data.erro === true) {
-      setErrorMessage("O CEP não foi encontrado, tente novamente!")
+    try {
+      const res = await api.get(`/${cep}/json/`)
+
+      if (res.data.erro === true) {
+        setErrorMessage("O CEP não foi encontrado, tente novamente!")
+        setIsOpen(true)
+        return
+      }
+
+      const newAddress = {
+        id: address.length + 1,
+        cep: res.data.cep,
+        street: res.data.logradouro,
+        nbh: res.data.bairro,
+        city: res.data.localidade,
+        state: res.data.uf
+      }
+
+      setAddress([...address, newAddress])
+
+    } catch (e) {
+      setErrorMessage("Ocorreu um erro ao buscar o CEP. Tente novamente mais tarde.")
       setIsOpen(true)
-      return
-    }
 
-    const newAddress = {
-      id: address.length + 1,
-      cep: res.data.cep,
-      street: res.data.logradouro,
-      nbh: res.data.bairro,
-      city: res.data.localidade,
-      state: res.data.uf
+    } finally {
+      setLoading(false)
     }
-
-    const newList = [...address, newAddress]
-    setAddress(newList)
 
     inputCep.current.value = ""
+    setIsOpen(false)
   }
 
   function closeAddress(id) {
-    const newList = address.filter(item => id !== item.id)
-
-    setAddress(newList)
+    setAddress(address.filter(item => id !== item.id))
   }
 
   return (
@@ -74,14 +82,14 @@ export function App() {
       <h1 className="text-green-600 font-bold text-5xl">Buscar CEP</h1>
       <div className="md:justify-between md:flex-row md:gap-5 justify-center items-center flex flex-col gap-5">
         <input onKeyUp={handleKeyPress} ref={inputCep} type="text" placeholder="Ex: 28460785" className="w-96 p-3 text-lg font-bold outline-none  text-[20px] bg-slate-700 text-zinc-200 rounded-sm placeholder:font-normal" />
-        <button onClick={verifyInput} className="w-[100%] md:w-[100px] h-[50px] bg-red-800 rounded-sm text-white font-bold hover:bg-red-900 active:scale-95 duration-150 ">Buscar</button>
+        <button onClick={verifyInput} className="w-[100%] md:w-fit md: px-5 h-[50px] bg-red-800 rounded-sm text-white font-bold hover:bg-red-900 active:scale-95 duration-150 ">{loading ? "Carregando..." : "Buscar"}</button>
       </div>
 
       {address.length > 0 && address.map(item => (
         <Address key={item.id} item={item} closeAddress={closeAddress} />
       ))}
 
-      {showError(isOpen) === true && <Error errorMessage={errorMessage} showError={showError} setIsOpen={setIsOpen} />}
+      {isOpen && <Error errorMessage={errorMessage} setIsOpen={setIsOpen} />}
 
     </main>
   )
