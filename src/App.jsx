@@ -82,7 +82,7 @@ export function App() {
       <h1 className="text-green-600 font-bold text-5xl">Buscar CEP</h1>
       <div className="md:justify-between md:flex-row md:gap-5 justify-center items-center flex flex-col gap-5">
         <input onKeyUp={handleKeyPress} ref={inputCep} type="text" placeholder="Ex: 28460785" className="w-96 p-3 text-lg font-bold outline-none  text-[20px] bg-slate-700 text-zinc-200 rounded-sm placeholder:font-normal" />
-        <button onClick={verifyInput} className="w-[100%] md:w-fit md: px-5 h-[50px] bg-red-800 rounded-sm text-white font-bold hover:bg-red-900 active:scale-95 duration-150 ">{loading ? "Carregando..." : "Buscar"}</button>
+        <button onClick={verifyInput} className="w-[100%] md:w-[150px] h-[50px] bg-red-800 rounded-sm text-white font-bold hover:bg-red-900 active:scale-95 duration-150 ">{loading ? "Carregando..." : "Buscar"}</button>
       </div>
 
       {address.length > 0 && address.map(item => (
